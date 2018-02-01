@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  .row
+    .col.py-3
+      h1.text-info Sendmail Ticket
+      p.lead チケット##{id}の担当者に電子メールを送信します。
+  hr
+  .row
+    .col-md-8.order-md-1.order-sm-2.py-3
+      include components/mailform
+    .col-md-4.order-md-2.order-sm-1.py-3
+      include components/download

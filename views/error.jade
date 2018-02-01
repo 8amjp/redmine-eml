@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  .row
+    .col.py-3
+      .alert.alert-danger(role='alert')
+        h4 正しいパラメータを指定してください
+        p 指定できるパラメータは下記の通りです:
+  .row
+    .col.py-3
+      include components/usage

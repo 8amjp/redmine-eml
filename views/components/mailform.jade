@@ -1,0 +1,22 @@
+form
+  .card
+    .card-header
+      dl.row
+        dt.col-sm-2 From:
+        dd.col-10 #{message.from}
+        dt.col-sm-2 To:
+        dd.col-10
+          for item, i in message.to
+            span.badge.badge-light.px-1 #{item.name}&lt;#{item.address}&gt;
+        dt.col-sm-2 CC:
+        dd.col-10
+          for item, i in message.cc
+            span.badge.badge-light.px-1 #{item.name}&lt;#{item.address}&gt;
+        dt.col-sm-2 BCC:
+        dd.col-10
+          for item, i in message.bcc
+            span.badge.badge-light.px-1 #{item.name}&lt;#{item.address}&gt;
+        dt.col-sm-2 件名:
+        dd.col-10 #{message.subject}
+    .card-body
+      .card-text!=message.html

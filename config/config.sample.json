@@ -1,0 +1,16 @@
+{
+  "api_key": "0000000000000000000000000000000000000000",
+  "host_name": "http://localhost/redmine/",
+  "smtp" : {
+    "host": "smtp.example.com",
+    "port": 587,
+    "secure": false,
+    "auth": {
+        "user": "user",
+        "pass": "pass"
+    }
+  },
+  "message" : {
+    "from": "from@example.com"
+  }
+}
