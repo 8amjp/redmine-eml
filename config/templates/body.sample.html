@@ -1,0 +1,12 @@
+<h1 style='font-size:1em;'><a href="${host_name}issues/${issue.id}"> ${issue.tracker.name} #${issue.id}: ${issue.subject}</a></h1>
+<ul>
+  <li>作成者: ${issue.author.name}</li>
+  <li>ステータス: ${issue.status.name}</li>
+  <li>優先度: ${issue.priority.name}</li>
+  <li>担当者: ${issue.assigned_to.name}</li>
+  <li>カテゴリ: ${issue.category.name}</li>
+  <li>対象バージョン: ${issue.fixed_version.name}</li>
+</ul>
+<pre style='white-space: pre-wrap;'>
+${issue.description}
+</pre>

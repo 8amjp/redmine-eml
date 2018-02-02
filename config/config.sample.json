@@ -1,6 +1,34 @@
 {
   "api_key": "0000000000000000000000000000000000000000",
+  "api_base_url": "http://localhost/redmine/",
   "host_name": "http://localhost/redmine/",
+  "template": {
+    "use_attributes": ["project", "tracker", "status", "priority"],
+    "body": "templates/body.html",
+    "header": {
+      "project": {
+        "1": "templates/header-project-1.html"
+      }
+    },
+    "footer": {
+      "tracker": {
+        "2": "templates/footer-tracker-2.html"
+      }
+    }
+  },
+  "message" : {
+    "from": {
+      "name": "from",
+      "address": "from@example.com"
+    },
+    "cc": [
+      {
+        "name": "admin",
+        "address": "admin@example.com"
+      }
+    ],
+    "subject": "[${issue.project.name} - ${issue.tracker.name} #${issue.id}] (${issue.status.name}) ${issue.subject}"
+  },
   "smtp" : {
     "host": "smtp.example.com",
     "port": 587,
@@ -9,8 +37,5 @@
         "user": "user",
         "pass": "pass"
     }
-  },
-  "message" : {
-    "from": "from@example.com"
   }
 }

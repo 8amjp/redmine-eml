@@ -8,7 +8,6 @@ var MailComposer = require('nodemailer/lib/mail-composer');
 var template = require('es6-template-strings');
 
 var config = require('../config/config');
-const template_path = 'config/template.html';
 
 var headers = {
   'Content-Type': 'application/json',
@@ -18,13 +17,7 @@ var format = '.json';
 
 var message = {
   'from': config.message.from,
-  'to': [],
-  'cc': [],
-  'bcc': [],
-  'subject': '',
-  'text': '',
-  'html': '',
-  'attachments': []
+  'bcc': config.message.bcc || []
 };
 
 // /issues/:id*
@@ -36,10 +29,10 @@ router.get('/:id(\\d+)*', function (req, res, next) {
     Promise.all([
       requestTo(issue.assigned_to.id),
       requestCc(issue.watchers),
+      parseSubject(issue),
       parseBody(issue)
     ])
     .then(function(){
-      parseSubject(issue);
       next();
     })
   })
@@ -50,6 +43,7 @@ router.get('/:id(\\d+)', function (req, res) {
   let id = req.params.id;
   res.render('issue', {
     'message': message,
+    'host_name': config.host_name || 'http://localhost/redmine/',
     'id': id,
     'download_url': path.join(req.originalUrl, 'download')
   })
@@ -73,7 +67,7 @@ function requestTo(id) {
     // グループ取得
     request({ url: `${config.api_base_url}groups/${id}${format}?include=users`, headers: headers, json: true })
     .then(function(data){
-      message.to = [];
+      message.to = config.message.to || [];
       let iterable = [];
       data.group.users.forEach(function(user) {
         iterable.push(
@@ -105,7 +99,7 @@ function requestTo(id) {
 // CCを取得
 function requestCc(watchers) {
   return new Promise(function(resolve, reject) {
-    message.cc = [];
+    message.cc = config.message.cc || [];
     let iterable = [];
     watchers.forEach(function(user) {
       iterable.push(
@@ -127,23 +121,61 @@ function requestCc(watchers) {
 
 // 件名の編集
 function parseSubject(issue) {
-  message.subject = `[${issue.tracker.name} #${issue.id}] ${issue.subject}`;
+  return new Promise(function(resolve, reject) {
+    message.subject = template(config.message.subject, { issue: issue, host_name: config.host_name });
+    resolve();
+  })
 }
 
 // 本文の編集
 function parseBody(issue) {
   return new Promise(function(resolve, reject) {
-    fs.readFile(template_path, 'utf8', (err, data) => {
-      if (err) reject(err);
-      resolve(data);
+    let iterable = [];
+    let id;
+    let attributes = config.template.use_attributes || [];
+    // 本文のヘッダー
+    if (config.template.hasOwnProperty('header')) {
+      let header = config.template.header;
+      attributes.forEach(function(attr) {
+        if (issue.hasOwnProperty(attr)) {
+          id = issue[attr].id;
+          if (header.hasOwnProperty(attr) && header[attr].hasOwnProperty(id)) iterable.push(getTemplate(header[attr][id]));
+        }
+      });
+    }
+    // 本文
+    if (config.template.hasOwnProperty('body')) {
+      iterable.push(getTemplate(config.template.body));
+    }
+    // 本文のフッター
+    if (config.template.hasOwnProperty('footer')) {
+      let footer = config.template.footer;
+      attributes.forEach(function(attr) {
+        if (issue.hasOwnProperty(attr)) {
+          id = issue[attr].id;
+          if (footer.hasOwnProperty(attr) && footer[attr].hasOwnProperty(id)) iterable.push(getTemplate(footer[attr][id]));
+        }
+      });
+    }
+    Promise.all(iterable)
+    .then(function(data){
+      message.html = template(data.join(''), { issue: issue, host_name: config.host_name });
+      resolve();
     })
   })
-  .then(function(data){
-    message.html = template(data, { issue: issue, host_name: config.host_name });
-  })
-  .catch(function(err){
-    message.html = '';
-    console.log(err);
+}
+// 本文の編集
+function getTemplate(template_path) {
+  return new Promise(function(resolve, reject) {
+    fs.readFile(path.join('config', template_path), 'utf8', (err, data) => {
+      if (!err) {
+        console.log(`// ${template_path}: Found.`); //// console.log
+        resolve(data);
+      } else {
+        console.log(`// ${template_path}: Not Found.`); //// console.log
+        reject(err);
+      }
+    })
   })
 }
 

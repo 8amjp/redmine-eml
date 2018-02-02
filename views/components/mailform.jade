@@ -3,7 +3,8 @@ form
     .card-header
       dl.row
         dt.col-sm-2 From:
-        dd.col-10 #{message.from}
+        dd.col-10
+          span.badge.badge-light.px-1 #{message.from.name}&lt;#{message.from.address}&gt;
         dt.col-sm-2 To:
         dd.col-10
           for item, i in message.to
